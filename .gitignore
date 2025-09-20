@@ -43,3 +43,5 @@ CLAUDE.md
 .env
 .env.local
 .env.*.local
+
+*.pem
