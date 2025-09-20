@@ -5,16 +5,15 @@ services:
       dockerfile: Dockerfile
       network: host
     container_name: freebox-exporter
-    # ports:
-    #   - "${FBX_EXPORTER_PORT:-9091}:9091"  # Uncomment to expose metrics externally
+    user: 65534:65534
+    ports:
+      - "${FBX_EXPORTER_PORT:-9091}:9091"  # Uncomment to expose metrics externally
     secrets:
       - freebox_token
-    volumes:
-      - ./token.json:/app/token.json:ro  # Alternative: use volume mount if secrets not available
     # Override default CMD with additional flags
     command: [
       "-hostDetails",
-      "-debug",
+      # "-debug",
       "-listen", ":9091",
       "/run/secrets/freebox_token"
     ]
@@ -32,11 +31,11 @@ services:
     image: prom/prometheus:${PROMETHEUS_VERSION:-v2.54.1}
     container_name: prometheus-fbx
     user: "65534:65534"  # nobody:nobody user to avoid permission issues
-    # ports:
-    #   - "${PROMETHEUS_PORT:-9090}:9090"  # Uncomment to expose Prometheus externally
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"  # Uncomment to expose Prometheus externally
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
+      - ./prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -45,9 +44,9 @@ services:
       - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-30d}'
       - '--web.enable-lifecycle'
     restart: unless-stopped
-    depends_on:
-      freebox-exporter:
-        condition: service_healthy
+    #depends_on:
+    #  freebox-exporter:
+    #    condition: service_healthy
     networks:
       - fbx-export
     healthcheck:
@@ -64,8 +63,8 @@ services:
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana_data:/var/lib/grafana
+      - ./grafana_provisioning:/etc/grafana/provisioning
     secrets:
       - grafana_admin_user
       - grafana_admin_password
@@ -86,15 +85,14 @@ services:
       retries: 3
       start_period: 30s
 
-volumes:
-  prometheus_data:
-  grafana_data:
-
 networks:
   fbx-export:
     name: ${DOCKER_NETWORK_NAME:-fbx-export-prod}
     driver: bridge
-
+  traefik:
+    name: "traefik-lan"
+    external: true
+  
 secrets:
   freebox_token:
     file: ./secrets/freebox_token.json
