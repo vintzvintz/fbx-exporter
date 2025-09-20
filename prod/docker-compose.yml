@@ -19,7 +19,7 @@ services:
     ]
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9091/metrics"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9091/metrics"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -44,13 +44,13 @@ services:
       - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-30d}'
       - '--web.enable-lifecycle'
     restart: unless-stopped
-    #depends_on:
-    #  freebox-exporter:
-    #    condition: service_healthy
+    depends_on:
+      freebox-exporter:
+        condition: service_healthy
     networks:
       - fbx-export
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -79,7 +79,7 @@ services:
     networks:
       - fbx-export
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
