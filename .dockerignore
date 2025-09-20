@@ -1,0 +1,39 @@
+# Exclude production deployment files and data
+prod/
+dev/
+
+# Exclude development files
+.vscode/
+.claude/
+*.code-workspace
+instructions.claude
+
+# Exclude Git and version control
+.git/
+.gitignore
+
+# Exclude documentation (not needed for build)
+README.md
+DEV.md
+CLAUDE.md
+LICENSE
+
+# Exclude build artifacts
+freebox-exporter
+
+# Exclude Go cache and temporary files
+.cache/
+*.tmp
+*.log
+
+# Exclude any generated data directories
+*_data/
+data/
+logs/
+
+# Common files to exclude
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
