@@ -1,6 +1,6 @@
 #!/bin/bash
-# Fix permissions for FBX Exporter Production Environment
-# This script analyzes required permissions and provides commands for the user
+# Permission Checker for FBX Exporter Production Environment
+# Analyzes requirements and generates commands for proper permissions setup
 
 set -euo pipefail
 
@@ -86,10 +86,10 @@ log_info "  - Freebox Exporter: $FREEBOX_UID:$FREEBOX_GID"
 log_info "  - Prometheus: $PROMETHEUS_UID:$PROMETHEUS_GID"
 log_info "  - Grafana: $GRAFANA_UID:$GRAFANA_GID"
 
-# Production data directories (fixed paths)
+# Data directories (unified structure)
 DATA_DIRS=(
-    "./prometheus_data"
-    "./grafana_data"
+    "./data/prometheus"
+    "./data/grafana"
     "./secrets"
 )
 
@@ -139,31 +139,33 @@ fi
 log_action "Set proper ownership and permissions:"
 
 # Prometheus data
-COMMANDS_TO_RUN+=("sudo chown -R $PROMETHEUS_UID:$PROMETHEUS_GID './prometheus_data'")
-COMMANDS_TO_RUN+=("chmod -R 755 './prometheus_data'")
+COMMANDS_TO_RUN+=("chown -R $PROMETHEUS_UID:$PROMETHEUS_GID './data/prometheus'")
+COMMANDS_TO_RUN+=("chmod -R 755 './data/prometheus'")
 
 # Grafana data
-COMMANDS_TO_RUN+=("sudo chown -R $GRAFANA_UID:$GRAFANA_GID './grafana_data'")
-COMMANDS_TO_RUN+=("chmod -R 755 './grafana_data'")
+COMMANDS_TO_RUN+=("chown -R $GRAFANA_UID:$GRAFANA_GID './data/grafana'")
+COMMANDS_TO_RUN+=("chmod -R 755 './data/grafana'")
 
 # Secrets (hobby VPS - owned by deployment user for easy maintenance)
 CURRENT_USER=$(whoami)
-COMMANDS_TO_RUN+=("sudo chown -R $CURRENT_USER:$CURRENT_USER './secrets'")
+COMMANDS_TO_RUN+=("chown -R $CURRENT_USER:$CURRENT_USER './secrets'")
 COMMANDS_TO_RUN+=("find './secrets' -type f -exec chmod 644 {} \\;")
 COMMANDS_TO_RUN+=("chmod 755 './secrets'")
 
 # Grafana provisioning if it exists
-if [[ -d "./grafana_provisioning" ]]; then
-    COMMANDS_TO_RUN+=("sudo chown -R $GRAFANA_UID:$GRAFANA_GID './grafana_provisioning'")
-    COMMANDS_TO_RUN+=("find './grafana_provisioning' -type f -exec chmod 644 {} \\;")
-    COMMANDS_TO_RUN+=("find './grafana_provisioning' -type d -exec chmod 755 {} \\;")
+if [[ -d "./provisioning" ]]; then
+    COMMANDS_TO_RUN+=("chown -R $GRAFANA_UID:$GRAFANA_GID './provisioning'")
+    COMMANDS_TO_RUN+=("find './provisioning' -type f -exec chmod 644 {} \\;")
+    COMMANDS_TO_RUN+=("find './provisioning' -type d -exec chmod 755 {} \\;")
 fi
 
 # Display all commands to run
 echo ""
-log_info "Execute the following commands:"
+log_info "Execute the following commands as root or with sudo:"
 echo ""
-echo "# Fix permissions for production environment"
+echo "# Fix permissions for hobby VPS environment"
+echo "# Run these commands as root user or prefix each with 'sudo'"
+echo ""
 for cmd in "${COMMANDS_TO_RUN[@]}"; do
     echo "$cmd"
 done
@@ -180,6 +182,11 @@ if [[ ${#MISSING_FILES[@]} -gt 0 ]]; then
     exit 1
 fi
 
+echo ""
+echo ""
+log_info "How to execute:"
+log_info "  Option 1: Run as root user (sudo -s)"
+log_info "  Option 2: Prefix each command with sudo"
 echo ""
 log_info "Security notes for hobby VPS:"
 log_info "  - Secrets owned by deployment user ($CURRENT_USER) for easy maintenance"

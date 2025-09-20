@@ -51,10 +51,9 @@ config.json
 # Log files
 *.log
 
-# Data directories
+# Data directories (unified structure)
 /dev/data/
-/prod/grafana_data/
-/prod/prometheus_data/
+/prod/data/
 
 # =============================================================================
 # DEVELOPMENT & IDE FILES
