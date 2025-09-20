@@ -7,7 +7,7 @@ services:
     container_name: freebox-exporter
     user: 65534:65534
     ports:
-      - "${FBX_EXPORTER_PORT:-9091}:9091"  # Uncomment to expose metrics externally
+      - "${BIND_IP:-127.0.0.1}:${FBX_EXPORTER_PORT:-9091}:9091"
     secrets:
       - freebox_token
     # Override default CMD with additional flags
@@ -32,7 +32,7 @@ services:
     container_name: prometheus-fbx
     user: "65534:65534"  # nobody:nobody user to avoid permission issues
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"  # Uncomment to expose Prometheus externally
+      - "${BIND_IP:-127.0.0.1}:${PROMETHEUS_PORT:-9090}:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus_data:/prometheus
@@ -61,7 +61,7 @@ services:
     container_name: grafana-fbx
     user: "472:472"  # Default Grafana user ID to avoid permission issues
     ports:
-      - "${GRAFANA_PORT:-3000}:3000"
+      - "${BIND_IP:-127.0.0.1}:${GRAFANA_PORT:-3000}:3000"
     volumes:
       - ./grafana_data:/var/lib/grafana
       - ./grafana_provisioning:/etc/grafana/provisioning
