@@ -100,6 +100,24 @@ if [[ ${#MISSING_DIRS[@]} -gt 0 ]]; then
     done
 fi
 
+# Create secrets from examples if they don't exist
+SECRETS=(
+    "grafana_admin_user.txt"
+    "grafana_admin_password.txt"
+    "freebox_token.json"
+)
+
+log_info "Creating secrets from examples if needed..."
+for secret in "${SECRETS[@]}"; do
+    secret_file="./secrets/$secret"
+    example_file="./secrets/$secret.example"
+
+    if [[ ! -f "$secret_file" && -f "$example_file" ]]; then
+        log_info "Creating $secret from example"
+        cp "$example_file" "$secret_file"
+    fi
+done
+
 # Generate permission commands
 COMMANDS_TO_RUN=()
 
