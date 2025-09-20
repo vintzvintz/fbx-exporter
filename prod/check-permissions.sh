@@ -126,18 +126,14 @@ done
 if [[ ${#MISSING_DIRS[@]} -gt 0 ]]; then
     log_warn "Missing directories detected:"
     for dir in "${MISSING_DIRS[@]}"; do
-        echo "  - $dir"
+        log_warn "  - $dir"
     done
-    echo ""
-    log_action "Create missing directories:"
     for dir in "${MISSING_DIRS[@]}"; do
         COMMANDS_TO_RUN+=("mkdir -p '$dir'")
     done
 fi
 
 # Generate permission commands
-log_action "Set proper ownership and permissions:"
-
 # Prometheus data
 COMMANDS_TO_RUN+=("chown -R $PROMETHEUS_UID:$PROMETHEUS_GID './data/prometheus'")
 COMMANDS_TO_RUN+=("chmod -R 755 './data/prometheus'")
@@ -160,11 +156,7 @@ if [[ -d "./provisioning" ]]; then
 fi
 
 # Display all commands to run
-echo ""
-log_info "Execute the following commands as root or with sudo:"
-echo ""
-echo "# Fix permissions for hobby VPS environment"
-echo "# Run these commands as root user or prefix each with 'sudo'"
+log_action "Execute the following commands:"
 echo ""
 for cmd in "${COMMANDS_TO_RUN[@]}"; do
     echo "$cmd"
@@ -175,24 +167,8 @@ if [[ ${#MISSING_FILES[@]} -gt 0 ]]; then
     echo ""
     log_error "Missing critical files:"
     for file in "${MISSING_FILES[@]}"; do
-        echo "  - $file"
+        log_error "  - $file"
     done
-    echo ""
     log_action "Ensure these files exist before starting services"
     exit 1
 fi
-
-echo ""
-echo ""
-log_info "How to execute:"
-log_info "  Option 1: Run as root user (sudo -s)"
-log_info "  Option 2: Prefix each command with sudo"
-echo ""
-log_info "Security notes for hobby VPS:"
-log_info "  - Secrets owned by deployment user ($CURRENT_USER) for easy maintenance"
-log_info "  - Standard permissions (644/755) - suitable for hobby/development use"
-log_info "  - Services run with non-root users (65534 for most, 472 for Grafana)"
-log_info "  - Data directories owned by respective service users"
-log_info "  - No sudo required for editing secrets after setup"
-echo ""
-log_info "After running the commands above, start with: docker compose up -d"

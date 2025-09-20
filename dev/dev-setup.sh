@@ -82,22 +82,25 @@ DATA_DIRS=(
     "./secrets"
 )
 
-log_info "Creating data directories if needed..."
+MISSING_DIRS=()
 for dir in "${DATA_DIRS[@]}"; do
     if [[ ! -d "$dir" ]]; then
-        log_info "Creating directory: $dir"
+        MISSING_DIRS+=("$dir")
+    fi
+done
+
+if [[ ${#MISSING_DIRS[@]} -gt 0 ]]; then
+    log_info "Creating missing directories..."
+    for dir in "${MISSING_DIRS[@]}"; do
         mkdir -p "$dir" || {
             log_error "Failed to create directory: $dir"
             log_action "Run: sudo mkdir -p '$dir' && sudo chown $CURRENT_USER:$CURRENT_USER '$dir'"
             exit 1
         }
-    fi
-done
+    done
+fi
 
-# Detect current user UID/GID and update .env automatically
-log_info "Updating .env with detected UID/GID and generating permission commands..."
-
-# Generate permission commands (same logic as prod but for dev environment)
+# Generate permission commands
 COMMANDS_TO_RUN=()
 
 # Data directories owned by current user
@@ -116,7 +119,7 @@ COMMANDS_TO_RUN+=("find '$SECRETS_DIR' -type f -exec chmod 600 {} \\;")
 COMMANDS_TO_RUN+=("chmod 700 '$SECRETS_DIR'")
 
 # Try to execute commands without sudo first
-log_info "Attempting to fix permissions..."
+log_action "Fixing permissions..."
 FAILED_OPERATIONS=()
 
 for cmd in "${COMMANDS_TO_RUN[@]}"; do
@@ -128,32 +131,13 @@ for cmd in "${COMMANDS_TO_RUN[@]}"; do
 done
 
 # Summary and instructions
-echo ""
 if [[ ${#FAILED_OPERATIONS[@]} -eq 0 ]]; then
-    log_info "✓ All permissions fixed successfully!"
-    log_info "Environment configured with:"
-    log_info "  - DEV_UID=$CURRENT_UID"
-    log_info "  - DEV_GID=$CURRENT_GID"
-    echo ""
-    log_info "You can now run: docker compose up -d"
+    log_info "✓ Setup complete! Environment configured with DEV_UID=$CURRENT_UID, DEV_GID=$CURRENT_GID"
+    log_action "Start with: docker compose up -d"
 else
     log_warn "Some operations failed. Execute the following commands:"
-    echo ""
-    echo "# Fix remaining permission issues"
-    echo "# Run as root user or prefix each with 'sudo'"
     echo ""
     for cmd in "${FAILED_OPERATIONS[@]}"; do
         echo "$cmd"
     done
-    echo ""
-    log_info "How to execute:"
-    log_info "  Option 1: Run as root user (su -)"
-    log_info "  Option 2: Prefix each command with sudo"
-    echo ""
-    log_info "Security notes for development:"
-    log_info "  - All files owned by development user ($CURRENT_UID) for easy maintenance"
-    log_info "  - Secrets have secure permissions (600/700)"
-    log_info "  - Containers run with same UID for seamless access"
-    echo ""
-    log_info "After fixing permissions, start with: docker compose up -d"
 fi
