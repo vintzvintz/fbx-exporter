@@ -146,8 +146,9 @@ COMMANDS_TO_RUN+=("chmod -R 755 './prometheus_data'")
 COMMANDS_TO_RUN+=("sudo chown -R $GRAFANA_UID:$GRAFANA_GID './grafana_data'")
 COMMANDS_TO_RUN+=("chmod -R 755 './grafana_data'")
 
-# Secrets (readable by all users for easier maintenance)
-COMMANDS_TO_RUN+=("sudo chown -R root:root './secrets'")
+# Secrets (hobby VPS - owned by deployment user for easy maintenance)
+CURRENT_USER=$(whoami)
+COMMANDS_TO_RUN+=("sudo chown -R $CURRENT_USER:$CURRENT_USER './secrets'")
 COMMANDS_TO_RUN+=("find './secrets' -type f -exec chmod 644 {} \\;")
 COMMANDS_TO_RUN+=("chmod 755 './secrets'")
 
@@ -180,11 +181,11 @@ if [[ ${#MISSING_FILES[@]} -gt 0 ]]; then
 fi
 
 echo ""
-log_info "Security notes for production:"
-log_info "  - Secrets have standard permissions (644/755) for easier maintenance"
+log_info "Security notes for hobby VPS:"
+log_info "  - Secrets owned by deployment user ($CURRENT_USER) for easy maintenance"
+log_info "  - Standard permissions (644/755) - suitable for hobby/development use"
 log_info "  - Services run with non-root users (65534 for most, 472 for Grafana)"
 log_info "  - Data directories owned by respective service users"
-log_info "  - Root owns secrets directory"
-log_info "  - All files readable by system users for troubleshooting"
+log_info "  - No sudo required for editing secrets after setup"
 echo ""
 log_info "After running the commands above, start with: docker compose up -d"
