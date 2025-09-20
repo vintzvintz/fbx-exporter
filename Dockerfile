@@ -14,7 +14,7 @@ RUN --network=host go mod download
 COPY . .
 
 # Build the application
-RUN go build -o freebox-exporter .
+RUN go build -o freebox-exporter ./cmd/fbx-exporter
 
 # Final stage
 FROM alpine:3.20

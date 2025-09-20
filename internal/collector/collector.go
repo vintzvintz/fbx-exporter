@@ -1,4 +1,4 @@
-package main
+package collector
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/vintzvintz/fbx-exporter/fbx"
+	"github.com/vintzvintz/fbx-exporter/internal/fbx"
 	"github.com/vintzvintz/fbx-exporter/log"
 )
 

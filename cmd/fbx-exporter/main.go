@@ -10,7 +10,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/vintzvintz/fbx-exporter/fbx"
+	"github.com/vintzvintz/fbx-exporter/internal/collector"
+	"github.com/vintzvintz/fbx-exporter/internal/fbx"
 	"github.com/vintzvintz/fbx-exporter/log"
 )
 
@@ -55,12 +56,12 @@ func main() {
 		discovery = fbx.FreeboxDiscoveryHTTP
 	}
 
-	collector := NewCollector(args[0], discovery, *apiVersionPtr, *hostDetailsPtr, *debugPtr)
-	defer collector.Close()
+	freeboxCollector := collector.NewCollector(args[0], discovery, *apiVersionPtr, *hostDetailsPtr, *debugPtr)
+	defer freeboxCollector.Close()
 
 	// Create custom registry to avoid default Go metrics
 	registry := prometheus.NewRegistry()
-	registry.MustRegister(collector)
+	registry.MustRegister(freeboxCollector)
 
 	if *goMetricsPtr {
 		registry.MustRegister(collectors.NewGoCollector())
