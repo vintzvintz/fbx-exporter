@@ -9,7 +9,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/trazfr/freebox-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/log"
 )
 
 var (

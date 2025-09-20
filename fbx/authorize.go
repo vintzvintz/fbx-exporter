@@ -18,7 +18,7 @@ var (
 			panic(err)
 		}
 		return freeboxAuthorize{
-			AppID:      "com.github.trazfr.fboxexp",
+			AppID:      "com.github.vintzvintz.fbxexport",
 			AppName:    "prometheus-freebox-exporter",
 			AppVersion: "0.0.1",
 			DeviceName: hostname,
@@ -26,7 +26,7 @@ var (
 	}()
 )
 
-// getFreeboxAuthorize retrieves the static request to POST to POST /api/vX/login/authorize/
+// getFreeboxAuthorize retrieves the static request to POST to /api/vX/login/authorize/
 func getFreeboxAuthorize() *freeboxAuthorize {
 	return &authorize
 }

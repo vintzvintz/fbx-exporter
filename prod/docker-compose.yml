@@ -1,0 +1,104 @@
+services:
+  freebox-exporter:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      network: host
+    container_name: freebox-exporter
+    # ports:
+    #   - "${FBX_EXPORTER_PORT:-9091}:9091"  # Uncomment to expose metrics externally
+    secrets:
+      - freebox_token
+    volumes:
+      - ./token.json:/app/token.json:ro  # Alternative: use volume mount if secrets not available
+    # Override default CMD with additional flags
+    command: [
+      "-hostDetails",
+      "-debug",
+      "-listen", ":9091",
+      "/run/secrets/freebox_token"
+    ]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - fbx-export
+
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:-v2.54.1}
+    container_name: prometheus-fbx
+    user: "65534:65534"  # nobody:nobody user to avoid permission issues
+    # ports:
+    #   - "${PROMETHEUS_PORT:-9090}:9090"  # Uncomment to expose Prometheus externally
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-30d}'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    depends_on:
+      freebox-exporter:
+        condition: service_healthy
+    networks:
+      - fbx-export
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION:-11.3.0}
+    container_name: grafana-fbx
+    user: "472:472"  # Default Grafana user ID to avoid permission issues
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    secrets:
+      - grafana_admin_user
+      - grafana_admin_password
+    environment:
+      - GF_SECURITY_ADMIN_USER_FILE=/run/secrets/grafana_admin_user
+      - GF_SECURITY_ADMIN_PASSWORD_FILE=/run/secrets/grafana_admin_password
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks:
+      - fbx-export
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  fbx-export:
+    name: ${DOCKER_NETWORK_NAME:-fbx-export-prod}
+    driver: bridge
+
+secrets:
+  freebox_token:
+    file: ./secrets/freebox_token.json
+  grafana_admin_user:
+    file: ./secrets/grafana_admin_user.txt
+  grafana_admin_password:
+    file: ./secrets/grafana_admin_password.txt

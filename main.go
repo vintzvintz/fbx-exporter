@@ -7,10 +7,11 @@ import (
 	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/trazfr/freebox-exporter/fbx"
-	"github.com/trazfr/freebox-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/fbx"
+	"github.com/vintzvintz/fbx-exporter/log"
 )
 
 func usage() {
@@ -31,6 +32,7 @@ func main() {
 	httpDiscoveryPtr := flag.Bool("httpDiscovery", false, "use http://mafreebox.freebox.fr/api_version to discover the Freebox at the first run (by default: use mDNS)")
 	apiVersionPtr := flag.Int("apiVersion", 0, "Force the API version (by default use the latest one)")
 	listenPtr := flag.String("listen", ":9091", "listen to address")
+	goMetricsPtr := flag.Bool("goMetrics", false, "enable Go runtime metrics export")
 	flag.Parse()
 
 	args := flag.Args()
@@ -56,9 +58,16 @@ func main() {
 	collector := NewCollector(args[0], discovery, *apiVersionPtr, *hostDetailsPtr, *debugPtr)
 	defer collector.Close()
 
-	prometheus.MustRegister(collector)
+	// Create custom registry to avoid default Go metrics
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(collector)
 
-	http.Handle("/metrics", promhttp.Handler())
+	if *goMetricsPtr {
+		registry.MustRegister(collectors.NewGoCollector())
+		registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	}
+
+	http.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 	log.Info.Println("Listen to", *listenPtr)
 	log.Error.Println(http.ListenAndServe(*listenPtr, nil))
 }

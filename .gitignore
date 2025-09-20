@@ -1,12 +1,45 @@
 # Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+freebox-exporter
+__debug_bin*
 
-# Test binary, build with `go test -c`
+# Test binary, built with `go test -c`
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE files
+.idea/
+*.swp
+*.swo
+
+# Configuration files with sensitive data
+token.json
+*.token
+config.json
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# local dev files
+CLAUDE.md
+*.claude
+.vscode/
+/dev/.secrets/*
+!/dev/.secrets/token-example.json
+/dev/data
+
+# Environment files with sensitive data
+.env
+.env.local
+.env.*.local

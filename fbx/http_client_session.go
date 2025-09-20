@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/trazfr/freebox-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/log"
 )
 
 type sessionInfo struct {

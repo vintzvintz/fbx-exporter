@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.eol": "\n"
+	},
+	"extensions": {
+		"recommendations": [
+			"golang.go",
+			"ms-vscode.vscode-json"
+		]
+	}
+}

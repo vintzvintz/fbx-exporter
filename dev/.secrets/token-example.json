@@ -1,0 +1,13 @@
+{
+  "api": {
+    "api_domain": "example.fbxos.fr",
+    "uid": "00000000000000000000000000000000",
+    "https_available": true,
+    "https_port": 42513,
+    "device_name": "Freebox Server",
+    "api_version": "14.0",
+    "api_base_url": "/api/",
+    "device_type": "FreeboxServer8,1"
+  },
+  "app_token": "your_app_token_here_64_characters_long_base64_encoded_string"
+}

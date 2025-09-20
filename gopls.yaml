@@ -1,0 +1,40 @@
+build:
+  buildFlags: ["-tags=debug"]
+  env:
+    GOPROXY: "https://proxy.golang.org,direct"
+    GOSUMDB: "sum.golang.org"
+
+formatting:
+  gofumpt: true
+  local: "github.com/vintzvintz/fbx-exporter"
+
+ui:
+  completion:
+    usePlaceholders: true
+    experimentalPostfixCompletions: true
+  documentation:
+    hoverKind: "FullDocumentation"
+    linkTarget: "pkg.go.dev"
+  navigation:
+    importShortcut: "Definition"
+    symbolMatcher: "CaseInsensitive"
+    symbolStyle: "Full"
+
+analyses:
+  fillstruct: true
+  nonewvars: true
+  nolintlint: true
+  shadow: true
+  simplifycompositelit: true
+  simplifyrange: true
+  simplifyslice: true
+  unusedparams: true
+  unusedwrite: true
+
+codelens:
+  gc_details: false
+  generate: true
+  regenerate_cgo: true
+  tidy: true
+  upgrade_dependency: true
+  vendor: true
