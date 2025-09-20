@@ -1,3 +1,7 @@
+# =============================================================================
+# GO BUILD ARTIFACTS
+# =============================================================================
+
 # Binaries for programs and plugins
 freebox-exporter
 __debug_bin*
@@ -14,38 +18,58 @@ vendor/
 # Go workspace file
 go.work
 
-# IDE files
-.idea/
-*.swp
-*.swo
+# =============================================================================
+# SENSITIVE DATA & SECRETS
+# =============================================================================
 
 # Configuration files with sensitive data
 token.json
-*.token
+freebox_token.json
 config.json
+*.token
 
-# Log files
-*.log
-
-# Temporary files
-*.tmp
-*.temp
-
-# local dev files
-CLAUDE.md
-*.claude
-.vscode/
-/dev/.secrets/*
-!/dev/.secrets/token-example.json
-/dev/data
-
-/prod/grafana_data
-/prod/prometheus_data
-
+# Secrets directories (allow example files)
+/dev/secrets/*
+!/dev/secrets/*.example
+/prod/secrets/*
+!/prod/secrets/*.example
 
 # Environment files with sensitive data
 .env
 .env.local
 .env.*.local
 
+# SSL certificates
 *.pem
+*.key
+*.crt
+
+# =============================================================================
+# RUNTIME DATA & LOGS
+# =============================================================================
+
+# Log files
+*.log
+
+# Data directories
+/dev/data/
+/prod/grafana_data/
+/prod/prometheus_data/
+
+# =============================================================================
+# DEVELOPMENT & IDE FILES
+# =============================================================================
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude AI files
+CLAUDE.md
+*.claude
+
+# Temporary files
+*.tmp
+*.temp

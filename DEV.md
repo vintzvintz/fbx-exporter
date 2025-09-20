@@ -16,7 +16,7 @@ docker compose up -d
 ### Configuration
 
 - **Interface Prometheus** : http://localhost:9090
-- **Interface Grafana** : http://localhost:3000 (admin/mot_de_passe_dans_.secrets)
+- **Interface Grafana** : http://localhost:3000 (admin/mot_de_passe_dans_secrets)
 - **Target configurée** : `freebox-exporter:9091` (service Docker interne)
 - **Rétention des données** : 2 ans (730 jours)
 - **Network Docker** : fbx-export
@@ -37,7 +37,7 @@ FREEBOX_EXPORTER_PORT=9091
 
 # Credentials Grafana
 GRAFANA_ADMIN_USER=admin
-# Password stored in .secrets/grafana_admin_password.txt
+# Password stored in secrets/grafana_admin_password.txt
 
 # Rétention et intervalles
 PROMETHEUS_RETENTION_TIME=730d
@@ -56,8 +56,8 @@ GRAFANA_PROVISIONING_PATH=./data/grafana/provisioning
 ### Sécurité et Secrets
 
 Les données sensibles sont gérées via Docker secrets :
-- **Token Freebox** : Placez votre token dans `dev/.secrets/token.json`
-- **Mot de passe Grafana** : Dans `dev/.secrets/grafana_admin_password.txt`
+- **Token Freebox** : Placez votre token dans `dev/secrets/token.json`
+- **Mot de passe Grafana** : Dans `dev/secrets/grafana_admin_password.txt`
 
 Exemple de structure de token :
 ```json
@@ -81,7 +81,7 @@ Exemple de structure de token :
 ```bash
 # Premier démarrage : copier la configuration
 cp .env.example .env
-# Puis configurer vos secrets dans dev/.secrets/
+# Puis configurer vos secrets dans dev/secrets/
 
 # Construire les images (nécessaire pour freebox-exporter)
 cd dev && docker compose build
@@ -123,13 +123,13 @@ curl -s http://localhost:9091/metrics | grep "^freebox_" | head -10
    cp dev/.env.example dev/.env
 
    # Créer le répertoire des secrets
-   mkdir -p dev/.secrets
+   mkdir -p dev/secrets
 
    # Configurer le mot de passe Grafana
-   echo "votre_mot_de_passe" > dev/.secrets/grafana_admin_password.txt
+   echo "votre_mot_de_passe" > dev/secrets/grafana_admin_password.txt
 
    # Placer votre token Freebox (voir structure ci-dessus)
-   cp token.json dev/.secrets/token.json
+   cp token.json dev/secrets/token.json
    ```
 
 2. **Démarrer l'environnement complet** :
@@ -205,7 +205,7 @@ dev/
 ├── prometheus.yml                  # Configuration Prometheus (scraping freebox-exporter)
 ├── .env                           # Variables d'environnement (copier depuis .env.example)
 ├── .env.example                   # Template de configuration
-├── .secrets/                      # Secrets Docker (non versionné)
+├── secrets/                       # Secrets Docker (non versionné)
 │   ├── token.json                 # Token d'authentification Freebox
 │   ├── token-example.json         # Exemple de structure de token
 │   └── grafana_admin_password.txt # Mot de passe admin Grafana

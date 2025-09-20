@@ -63,6 +63,6 @@ networks:
 
 secrets:
   grafana_admin_user:
-    file: ./.secrets/grafana_admin_user.txt
+    file: ./secrets/grafana_admin_user.txt
   grafana_admin_password:
-    file: ./.secrets/grafana_admin_password.txt
+    file: ./secrets/grafana_admin_password.txt
