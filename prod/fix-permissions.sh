@@ -151,6 +151,10 @@ COMMANDS_TO_RUN+=("sudo chown -R root:root './secrets'")
 COMMANDS_TO_RUN+=("find './secrets' -type f -exec chmod 640 {} \\;")
 COMMANDS_TO_RUN+=("chmod 750 './secrets'")
 
+# Freebox token needs to be readable by freebox-exporter container
+COMMANDS_TO_RUN+=("sudo chown root:$FREEBOX_GID './secrets/freebox_token.json'")
+COMMANDS_TO_RUN+=("chmod 640 './secrets/freebox_token.json'")
+
 # Grafana provisioning if it exists
 if [[ -d "./grafana_provisioning" ]]; then
     COMMANDS_TO_RUN+=("sudo chown -R $GRAFANA_UID:$GRAFANA_GID './grafana_provisioning'")
@@ -185,5 +189,6 @@ log_info "  - Secrets have restrictive permissions (640/750)"
 log_info "  - Services run with non-root users (65534 for most, 472 for Grafana)"
 log_info "  - Data directories owned by respective service users"
 log_info "  - Root owns secrets for additional security"
+log_info "  - freebox_token.json is readable by freebox-exporter container (group $FREEBOX_GID)"
 echo ""
 log_info "After running the commands above, start with: docker compose up -d"
