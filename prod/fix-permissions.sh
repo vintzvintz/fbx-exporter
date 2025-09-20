@@ -1,6 +1,6 @@
 #!/bin/bash
 # Fix permissions for FBX Exporter Production Environment
-# This script sets proper ownership and permissions for production data directories
+# This script analyzes required permissions and provides commands for the user
 
 set -euo pipefail
 
@@ -11,6 +11,7 @@ cd "$SCRIPT_DIR"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 log_info() {
@@ -23,6 +24,10 @@ log_warn() {
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+log_action() {
+    echo -e "${BLUE}[ACTION]${NC} $1"
 }
 
 # Load environment variables from .env if it exists
@@ -76,9 +81,10 @@ PROMETHEUS_GID=${PROMETHEUS_USER#*:}
 GRAFANA_UID=${GRAFANA_USER%:*}
 GRAFANA_GID=${GRAFANA_USER#*:}
 
-log_info "Freebox Exporter will run as UID:GID = $FREEBOX_UID:$FREEBOX_GID"
-log_info "Prometheus will run as UID:GID = $PROMETHEUS_UID:$PROMETHEUS_GID"
-log_info "Grafana will run as UID:GID = $GRAFANA_UID:$GRAFANA_GID"
+log_info "Detected service UIDs/GIDs from docker-compose.yml:"
+log_info "  - Freebox Exporter: $FREEBOX_UID:$FREEBOX_GID"
+log_info "  - Prometheus: $PROMETHEUS_UID:$PROMETHEUS_GID"
+log_info "  - Grafana: $GRAFANA_UID:$GRAFANA_GID"
 
 # Production data directories (fixed paths)
 DATA_DIRS=(
@@ -87,65 +93,7 @@ DATA_DIRS=(
     "./secrets"
 )
 
-# Create data directories if they don't exist
-for dir in "${DATA_DIRS[@]}"; do
-    if [[ ! -d "$dir" ]]; then
-        log_info "Creating directory: $dir"
-        mkdir -p "$dir"
-    fi
-done
-
-# Fix Prometheus data permissions
-PROMETHEUS_DIR="./prometheus_data"
-if [[ -d "$PROMETHEUS_DIR" ]]; then
-    log_info "Fixing Prometheus data permissions: $PROMETHEUS_DIR"
-    sudo chown -R "$PROMETHEUS_UID:$PROMETHEUS_GID" "$PROMETHEUS_DIR"
-    chmod -R 755 "$PROMETHEUS_DIR"
-    log_info "Prometheus permissions fixed"
-fi
-
-# Fix Grafana data permissions
-GRAFANA_DIR="./grafana_data"
-if [[ -d "$GRAFANA_DIR" ]]; then
-    log_info "Fixing Grafana data permissions: $GRAFANA_DIR"
-    sudo chown -R "$GRAFANA_UID:$GRAFANA_GID" "$GRAFANA_DIR"
-    chmod -R 755 "$GRAFANA_DIR"
-    log_info "Grafana permissions fixed"
-fi
-
-# Fix secrets permissions (production security)
-SECRETS_DIR="./secrets"
-if [[ -d "$SECRETS_DIR" ]]; then
-    log_info "Fixing secrets permissions: $SECRETS_DIR"
-
-    # Secrets should be readable only by root and the service users
-    # More restrictive than dev environment
-    find "$SECRETS_DIR" -type f -name "*.txt" -exec chmod 600 {} \;
-    find "$SECRETS_DIR" -type f -name "*.json" -exec chmod 600 {} \;
-    chmod 700 "$SECRETS_DIR"
-
-    # Make sure Docker can read the secrets by setting proper ownership
-    # Keep root ownership but allow group read for Docker
-    sudo chown -R root:root "$SECRETS_DIR"
-    find "$SECRETS_DIR" -type f -exec chmod 640 {} \;
-    chmod 750 "$SECRETS_DIR"
-
-    log_info "Secrets permissions fixed (production security)"
-fi
-
-# Fix Grafana provisioning permissions if it exists
-PROVISIONING_DIR="./grafana_provisioning"
-if [[ -d "$PROVISIONING_DIR" ]]; then
-    log_info "Fixing Grafana provisioning permissions: $PROVISIONING_DIR"
-    sudo chown -R "$GRAFANA_UID:$GRAFANA_GID" "$PROVISIONING_DIR"
-    chmod -R 644 "$PROVISIONING_DIR"
-    find "$PROVISIONING_DIR" -type d -exec chmod 755 {} \;
-    log_info "Grafana provisioning permissions fixed"
-fi
-
-# Verify critical files exist
-log_info "Verifying critical configuration files..."
-
+# Critical files that must exist
 CRITICAL_FILES=(
     "./docker-compose.yml"
     "./secrets/freebox_token.json"
@@ -153,21 +101,89 @@ CRITICAL_FILES=(
     "./secrets/grafana_admin_password.txt"
 )
 
-for file in "${CRITICAL_FILES[@]}"; do
-    if [[ ! -f "$file" ]]; then
-        log_error "Critical file missing: $file"
-        log_error "Please ensure all required files are present before starting services"
-        exit 1
-    else
-        log_info "✓ Found: $file"
+echo ""
+log_info "=== PRODUCTION ENVIRONMENT SETUP ==="
+echo ""
+
+# Check if directories exist and analyze permissions
+COMMANDS_TO_RUN=()
+MISSING_DIRS=()
+MISSING_FILES=()
+
+for dir in "${DATA_DIRS[@]}"; do
+    if [[ ! -d "$dir" ]]; then
+        MISSING_DIRS+=("$dir")
     fi
 done
 
-# Summary
-log_info "Production permission fix completed successfully!"
-log_info "Security notes:"
+for file in "${CRITICAL_FILES[@]}"; do
+    if [[ ! -f "$file" ]]; then
+        MISSING_FILES+=("$file")
+    fi
+done
+
+# Generate commands for missing directories
+if [[ ${#MISSING_DIRS[@]} -gt 0 ]]; then
+    log_warn "Missing directories detected:"
+    for dir in "${MISSING_DIRS[@]}"; do
+        echo "  - $dir"
+    done
+    echo ""
+    log_action "Create missing directories:"
+    for dir in "${MISSING_DIRS[@]}"; do
+        COMMANDS_TO_RUN+=("mkdir -p '$dir'")
+    done
+fi
+
+# Generate permission commands
+log_action "Set proper ownership and permissions:"
+
+# Prometheus data
+COMMANDS_TO_RUN+=("sudo chown -R $PROMETHEUS_UID:$PROMETHEUS_GID './prometheus_data'")
+COMMANDS_TO_RUN+=("chmod -R 755 './prometheus_data'")
+
+# Grafana data
+COMMANDS_TO_RUN+=("sudo chown -R $GRAFANA_UID:$GRAFANA_GID './grafana_data'")
+COMMANDS_TO_RUN+=("chmod -R 755 './grafana_data'")
+
+# Secrets (production security)
+COMMANDS_TO_RUN+=("sudo chown -R root:root './secrets'")
+COMMANDS_TO_RUN+=("find './secrets' -type f -exec chmod 640 {} \\;")
+COMMANDS_TO_RUN+=("chmod 750 './secrets'")
+
+# Grafana provisioning if it exists
+if [[ -d "./grafana_provisioning" ]]; then
+    COMMANDS_TO_RUN+=("sudo chown -R $GRAFANA_UID:$GRAFANA_GID './grafana_provisioning'")
+    COMMANDS_TO_RUN+=("find './grafana_provisioning' -type f -exec chmod 644 {} \\;")
+    COMMANDS_TO_RUN+=("find './grafana_provisioning' -type d -exec chmod 755 {} \\;")
+fi
+
+# Display all commands to run
+echo ""
+log_info "Execute the following commands:"
+echo ""
+echo "# Fix permissions for production environment"
+for cmd in "${COMMANDS_TO_RUN[@]}"; do
+    echo "$cmd"
+done
+
+# Check for missing files
+if [[ ${#MISSING_FILES[@]} -gt 0 ]]; then
+    echo ""
+    log_error "Missing critical files:"
+    for file in "${MISSING_FILES[@]}"; do
+        echo "  - $file"
+    done
+    echo ""
+    log_action "Ensure these files exist before starting services"
+    exit 1
+fi
+
+echo ""
+log_info "Security notes for production:"
 log_info "  - Secrets have restrictive permissions (640/750)"
-log_info "  - Services run with non-root users"
-log_info "  - Data directories properly owned by service users"
-log_info ""
-log_info "You can now run: docker compose up -d"
+log_info "  - Services run with non-root users (65534 for most, 472 for Grafana)"
+log_info "  - Data directories owned by respective service users"
+log_info "  - Root owns secrets for additional security"
+echo ""
+log_info "After running the commands above, start with: docker compose up -d"
