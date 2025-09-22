@@ -45,11 +45,11 @@ options:
 
 ### Step 1 authorize API
 
-From the Freebox network, generate a token file for the API. The file `token.json` must not exist:
+From the Freebox network, generate a token file for the API. The file `freebox_token.json` must not exist:
 
 ```bash
-$ freebox-exporter token.json
-Could not find the configuration file token.json
+$ freebox-exporter freebox_token.json
+Could not find the configuration file freebox_token.json
 Freebox discovery: mDNS
 1 Please accept the login on the Freebox Server
 ...
@@ -57,7 +57,7 @@ Freebox discovery: mDNS
 
 You must accept the API on the Freebox device.
 
-Once done, the credentials will be stored in the new file `token.json`
+Once done, the credentials will be stored in the new file `freebox_token.json`
 
 **In case of errors**:
 
@@ -66,8 +66,8 @@ If you get the message `panic: Access is timeout`, you have to be faster to acce
 If you get the message `panic: MDNS timeout`, there may be a firewall preventing you to use mDNS. You may try to get the token using HTTP:
 
 ```bash
-$ freebox-exporter -httpDiscovery token.json
-Could not find the configuration file token.json
+$ freebox-exporter -httpDiscovery freebox_token.json
+Could not find the configuration file freebox_token.json
 Freebox discovery: GET http://mafreebox.freebox.fr/api_version
 1 Please accept the login on the Freebox Server
 ...
@@ -78,8 +78,8 @@ Freebox discovery: GET http://mafreebox.freebox.fr/api_version
 Once you have generated the token you may run from anywhere.
 
 ```bash
-$ freebox-exporter token.json
-Use configuration file token.json
+$ freebox-exporter freebox_token.json
+Use configuration file freebox_token.json
 Listen to :9091
 ```
 

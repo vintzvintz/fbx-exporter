@@ -53,8 +53,8 @@ cp secrets/grafana_admin_user.txt.example secrets/grafana_admin_user.txt
 cp secrets/grafana_admin_password.txt.example secrets/grafana_admin_password.txt
 
 # Generate Freebox token (on local PC with Freebox access)
-# Transfer token.json to VPS securely
-scp token.json user@vps:/opt/fbx-exporter/prod/secrets/freebox_token.json
+# Transfer freebox_token.json to VPS securely
+scp freebox_token.json user@vps:/opt/fbx-exporter/prod/secrets/freebox_token.json
 
 # Set Grafana credentials
 echo "admin" > secrets/grafana_admin_user.txt
@@ -222,20 +222,20 @@ rm secrets-backup-$(date +%Y%m%d).tar.gz
 ```bash
 # On local PC (requires physical Freebox access)
 cd fbx-exporter/
-go run . token.json
+go run . freebox_token.json
 
 # Accept authorization on Freebox device
 # Transfer token securely to VPS
-scp token.json user@vps:/opt/fbx-exporter/prod/secrets/freebox_token.json
+scp freebox_token.json user@vps:/opt/fbx-exporter/prod/secrets/freebox_token.json
 ```
 
 ### Token Rotation
 ```bash
 # Generate new token locally
-go run . new_token.json
+go run . new_freebox_token.json
 
 # Update VPS
-scp new_token.json user@vps:/opt/fbx-exporter/prod/secrets/freebox_token.json
+scp new_freebox_token.json user@vps:/opt/fbx-exporter/prod/secrets/freebox_token.json
 ssh user@vps "cd /opt/fbx-exporter/prod && docker-compose restart freebox-exporter"
 ```
 

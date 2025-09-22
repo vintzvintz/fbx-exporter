@@ -56,7 +56,7 @@ GRAFANA_PROVISIONING_PATH=./data/grafana/provisioning
 ### Sécurité et Secrets
 
 Les données sensibles sont gérées via Docker secrets :
-- **Token Freebox** : Placez votre token dans `dev/secrets/token.json`
+- **Token Freebox** : Placez votre token dans `dev/secrets/freebox_token.json`
 - **Mot de passe Grafana** : Dans `dev/secrets/grafana_admin_password.txt`
 
 Exemple de structure de token :
@@ -129,7 +129,7 @@ curl -s http://localhost:9091/metrics | grep "^freebox_" | head -10
    echo "votre_mot_de_passe" > dev/secrets/grafana_admin_password.txt
 
    # Placer votre token Freebox (voir structure ci-dessus)
-   cp token.json dev/secrets/token.json
+   cp freebox_token.json dev/secrets/freebox_token.json
    ```
 
 2. **Démarrer l'environnement complet** :
@@ -155,11 +155,11 @@ Pour tester l'exporter hors Docker :
 
 ```bash
 # Avec un fichier de token existant
-go run . token.json
+go run . freebox_token.json
 
 # Ou installation puis exécution
 go install
-freebox-exporter token.json
+freebox-exporter freebox_token.json
 ```
 
 ### Vérification des métriques
@@ -206,7 +206,7 @@ dev/
 ├── .env                           # Variables d'environnement (copier depuis .env.example)
 ├── .env.example                   # Template de configuration
 ├── secrets/                       # Secrets Docker (non versionné)
-│   ├── token.json                 # Token d'authentification Freebox
+│   ├── freebox_token.json         # Token d'authentification Freebox
 │   ├── token-example.json         # Exemple de structure de token
 │   └── grafana_admin_password.txt # Mot de passe admin Grafana
 └── data/                          # Données persistantes (non versionné)

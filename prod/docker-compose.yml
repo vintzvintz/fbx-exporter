@@ -10,6 +10,8 @@ services:
       - "${BIND_IP:-127.0.0.1}:${FBX_EXPORTER_PORT:-9091}:9091"
     secrets:
       - freebox_token
+    environment:
+      - FBX_APPNAME=${FBX_APPNAME:-freebox-exporter-prod}
     # Override default CMD with additional flags
     command: [
       "-hostDetails",

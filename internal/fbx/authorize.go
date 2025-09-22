@@ -17,9 +17,15 @@ var (
 		if err != nil {
 			panic(err)
 		}
+
+		appName := os.Getenv("FBX_APPNAME")
+		if appName == "" {
+			appName = "freebox-exporter"
+		}
+
 		return freeboxAuthorize{
 			AppID:      "com.github.vintzvintz.fbxexport",
-			AppName:    "prometheus-freebox-exporter",
+			AppName:    appName,
 			AppVersion: "0.0.1",
 			DeviceName: hostname,
 		}
