@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -14,6 +15,36 @@ import (
 type sessionInfo struct {
 	sessionToken string
 	challenge    string
+}
+
+type retryConfig struct {
+	minDelay      time.Duration
+	maxDelay      time.Duration
+	currentDelay  time.Duration
+	failureCount  int
+	lastFailure   time.Time
+}
+
+func newRetryConfig() *retryConfig {
+	minDelay := 5 * time.Second
+	if env := os.Getenv("FBX_RETRY_MIN_DELAY"); env != "" {
+		if d, err := time.ParseDuration(env); err == nil {
+			minDelay = d
+		}
+	}
+
+	maxDelay := 1 * time.Minute
+	if env := os.Getenv("FBX_RETRY_MAX_DELAY"); env != "" {
+		if d, err := time.ParseDuration(env); err == nil {
+			maxDelay = d
+		}
+	}
+
+	return &retryConfig{
+		minDelay:     minDelay,
+		maxDelay:     maxDelay,
+		currentDelay: minDelay,
+	}
 }
 
 // FreeboxSession represents all the variables used in a session
@@ -28,6 +59,8 @@ type FreeboxSession struct {
 	sessionTokenLock       sync.Mutex
 	sessionInfo            *sessionInfo
 	oldSessionInfo         *sessionInfo // avoid deleting the sessionInfo too quickly
+
+	retryConfig *retryConfig
 }
 
 func NewFreeboxSession(appToken string, client FreeboxHttpClient, apiVersion *FreeboxAPIVersion, queryVersion int) (FreeboxHttpClient, error) {
@@ -47,6 +80,8 @@ func NewFreeboxSession(appToken string, client FreeboxHttpClient, apiVersion *Fr
 		getChallengeURL:    getChallengeURL,
 
 		appToken: appToken,
+
+		retryConfig: newRetryConfig(),
 	}
 	if err := result.refresh(); err != nil {
 		return nil, err
@@ -72,10 +107,21 @@ func (f *FreeboxSession) do(action func() error) error {
 	if err := action(); err != nil {
 		switch err {
 		case errAuthRequired, errInvalidToken:
+			// Apply exponential backoff if there were recent failures
+			if f.shouldWaitBeforeRetry() {
+				log.Warning.Printf("Login failure backoff: waiting %v before retry (failure count: %d)",
+					f.retryConfig.currentDelay, f.retryConfig.failureCount)
+				time.Sleep(f.retryConfig.currentDelay)
+			}
+
 			err := f.refresh()
 			if err != nil {
+				f.recordFailure()
 				return err
 			}
+
+			// Reset retry state on successful refresh
+			f.resetRetryState()
 			return action()
 		default:
 			return err
@@ -83,6 +129,37 @@ func (f *FreeboxSession) do(action func() error) error {
 	}
 
 	return nil
+}
+
+func (f *FreeboxSession) shouldWaitBeforeRetry() bool {
+	if f.retryConfig.failureCount == 0 {
+		return false
+	}
+
+	// If the last failure was recent, apply backoff
+	return time.Since(f.retryConfig.lastFailure) < f.retryConfig.currentDelay*2
+}
+
+func (f *FreeboxSession) recordFailure() {
+	f.retryConfig.failureCount++
+	f.retryConfig.lastFailure = time.Now()
+
+	// Exponential backoff: double the delay up to max
+	f.retryConfig.currentDelay *= 2
+	if f.retryConfig.currentDelay > f.retryConfig.maxDelay {
+		f.retryConfig.currentDelay = f.retryConfig.maxDelay
+	}
+
+	log.Warning.Printf("Login failure recorded (count: %d, next delay: %v)",
+		f.retryConfig.failureCount, f.retryConfig.currentDelay)
+}
+
+func (f *FreeboxSession) resetRetryState() {
+	if f.retryConfig.failureCount > 0 {
+		log.Info.Printf("Login successful, resetting retry state (was %d failures)", f.retryConfig.failureCount)
+		f.retryConfig.failureCount = 0
+		f.retryConfig.currentDelay = f.retryConfig.minDelay
+	}
 }
 
 func (f *FreeboxSession) addHeader(req *http.Request) {
