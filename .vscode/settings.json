@@ -1,0 +1,71 @@
+{
+	"go.buildOnSave": "package",
+	"go.lintOnSave": "package",
+	"go.vetOnSave": "package",
+	"go.formatTool": "goimports",
+	"go.useLanguageServer": true,
+	"go.languageServerExperimentalFeatures": {
+		"diagnosticDelay": "500ms",
+		"watchFileChanges": true,
+		"completionDocumentation": true,
+		"hoverKind": "FullDocumentation",
+		"linkTarget": "pkg.go.dev",
+		"usePlaceholders": true
+	},
+	"go.toolsManagement.checkForUpdates": "local",
+	"go.gocodeAutoBuild": false,
+	"go.enableCodeLens": {
+		"runtest": true
+	},
+	"go.addTags": {
+		"tags": "json",
+		"options": "json=omitempty",
+		"promptForTags": false,
+		"transform": "snakecase"
+	},
+	"go.removeTags": {
+		"tags": "json",
+		"options": "",
+		"promptForTags": false
+	},
+	"files.eol": "\n",
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"[go]": {
+		"editor.tabSize": 4,
+		"editor.insertSpaces": false,
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "explicit"
+		},
+		"editor.suggest.showWords": false,
+		"editor.suggest.showSnippets": true,
+		"editor.quickSuggestions": {
+			"other": true,
+			"comments": false,
+			"strings": false
+		}
+	},
+	"[go.mod]": {
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "explicit"
+		}
+	},
+	"yaml.schemas": {},
+	"yaml.schemaStore.enable": false,
+	"yaml.validate": false,
+	"yaml.customTags": [],
+	"yaml.completion": false,
+	"yaml.format.enable": false,
+	"redhat.telemetry.enabled": false,
+	"files.associations": {
+		"dev/provisioning/datasources/*.yml": "plaintext",
+		"dev/provisioning/datasources/*.yaml": "plaintext",
+		".env.example": "properties",
+		".env": "properties",
+		".env.*": "properties",
+		"**/.env": "properties",
+		"**/.env.*": "properties"
+	}
+}

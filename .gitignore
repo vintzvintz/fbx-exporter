@@ -62,7 +62,16 @@ config.json
 
 # IDE files
 .idea/
+
+# VS Code - allow project config, exclude personal/sensitive files
 .vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+.vscode/extensions.json
+.vscode/*.log
+.vscode/settings.json.bak
+
+# Vim files
 *.swp
 *.swo
 
