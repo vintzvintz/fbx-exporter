@@ -12,7 +12,7 @@ import (
 
 	"github.com/vintzvintz/fbx-exporter/internal/collector"
 	"github.com/vintzvintz/fbx-exporter/internal/fbx"
-	"github.com/vintzvintz/fbx-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/internal/log"
 )
 
 func usage() {

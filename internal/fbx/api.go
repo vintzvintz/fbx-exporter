@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/mdns"
-	"github.com/vintzvintz/fbx-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/internal/log"
 )
 
 type FreeboxAPIVersion struct {

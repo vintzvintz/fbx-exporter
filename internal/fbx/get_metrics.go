@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/vintzvintz/fbx-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/internal/log"
 )
 
 // MetricsFreeboxSystem https://dev.freebox.fr/sdk/os/system/

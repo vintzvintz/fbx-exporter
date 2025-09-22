@@ -9,7 +9,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/vintzvintz/fbx-exporter/internal/fbx"
-	"github.com/vintzvintz/fbx-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/internal/log"
 )
 
 const (

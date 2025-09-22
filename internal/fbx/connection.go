@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/vintzvintz/fbx-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/internal/log"
 )
 
 type config struct {

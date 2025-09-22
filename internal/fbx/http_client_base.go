@@ -9,7 +9,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/vintzvintz/fbx-exporter/log"
+	"github.com/vintzvintz/fbx-exporter/internal/log"
 )
 
 var (
