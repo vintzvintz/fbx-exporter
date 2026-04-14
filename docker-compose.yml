@@ -1,0 +1,39 @@
+services:
+  freebox-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      network: host
+    container_name: freebox-exporter
+    user: 65534:65534
+    ports:
+      - "9091:9091"
+    volumes:
+      - ./freebox_token.json:/freebox_token.json:ro
+
+    #environment:
+    #  - FBX_APPNAME=${FBX_APPNAME:-freebox-exporter-prod}
+
+      # Override default CMD with additional flags
+    command: [
+      "-hostDetails",
+      # "-debug",
+      "-listen", ":9091",
+      "/freebox_token.json"
+    ]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9091/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - freebox
+
+networks:
+  freebox:
+    name: "freebox"
+    external: true
+  
+

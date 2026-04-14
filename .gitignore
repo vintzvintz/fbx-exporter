@@ -1,7 +1,3 @@
-# =============================================================================
-# GO BUILD ARTIFACTS
-# =============================================================================
-
 # Binaries for programs and plugins
 freebox-exporter
 fbx-exporter
@@ -19,61 +15,29 @@ vendor/
 # Go workspace file
 go.work
 
-# =============================================================================
-# SENSITIVE DATA & SECRETS
-# =============================================================================
-
 # Configuration files with sensitive data
 token.json
 freebox_token.json
 config.json
 *.token
 
-# Secrets directories (allow example files)
-/dev/secrets/*
-!/dev/secrets/*.example
-/prod/secrets/*
-!/prod/secrets/*.example
 
 # Environment files with sensitive data
 .env
 .env.local
 .env.*.local
 
-# SSL certificates
 *.pem
 *.key
 *.crt
 
-# =============================================================================
-# RUNTIME DATA & LOGS
-# =============================================================================
-
-# Log files
 *.log
-
-# Data directories (unified structure)
-/dev/data/
-/prod/data/
-
-# =============================================================================
-# DEVELOPMENT & IDE FILES
-# =============================================================================
-
-# IDE files
-.idea/
 
 # VS Code - allow project config, exclude personal/sensitive files
 .vscode/
 !.vscode/settings.json
 !.vscode/launch.json
-.vscode/extensions.json
-.vscode/*.log
-.vscode/settings.json.bak
 
-# Vim files
-*.swp
-*.swo
 
 # Claude AI files
 CLAUDE.md

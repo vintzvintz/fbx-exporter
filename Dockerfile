@@ -38,4 +38,4 @@ EXPOSE 9091
 
 # Run the exporter
 ENTRYPOINT ["./freebox-exporter"]
-CMD ["/run/secrets/freebox_token"]
+CMD ["/freebox_token.json"]
