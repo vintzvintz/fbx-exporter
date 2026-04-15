@@ -6,8 +6,6 @@ services:
       network: host
     container_name: freebox-exporter
     user: 65534:65534
-    ports:
-      - "9091:9091"
     volumes:
       - ./freebox_token.json:/freebox_token.json:ro
 
